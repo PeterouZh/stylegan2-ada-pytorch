@@ -180,8 +180,9 @@ class ProgressMonitor:
 def compute_feature_stats_for_dataset(opts, detector_url, detector_kwargs, rel_lo=0, rel_hi=1, batch_size=64, data_loader_kwargs=None, max_items=None, **stats_kwargs):
     dataset = dnnlib.util.construct_class_by_name(**opts.dataset_kwargs)
     if data_loader_kwargs is None:
-        data_loader_kwargs = dict(pin_memory=True, num_workers=3, prefetch_factor=2)
-
+        from template_lib.v2.config_cfgnode import global_cfg
+        num_workers = 0 if global_cfg.tl_debug else 3
+        data_loader_kwargs = dict(pin_memory=True, num_workers=num_workers, prefetch_factor=2)
     # Try to lookup from cache.
     cache_file = None
     if opts.cache:

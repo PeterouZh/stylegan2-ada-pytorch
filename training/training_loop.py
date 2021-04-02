@@ -376,6 +376,9 @@ def training_loop(
                 if rank == 0:
                     metric_main.report_metric(result_dict, run_dir=run_dir, snapshot_pkl=snapshot_pkl)
                 stats_metrics.update(result_dict.results)
+            from template_lib.v2.config_cfgnode import global_cfg
+            from template_lib.modelarts import modelarts_utils
+            modelarts_utils.modelarts_sync_results_dir(global_cfg, join=False)
         del snapshot_data # conserve memory
 
         # Collect statistics.
