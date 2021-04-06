@@ -198,8 +198,11 @@ def training_loop(
     # Setup training phases.
     if rank == 0:
         print('Setting up training phases...')
-    loss = dnnlib.util.construct_class_by_name(
-        device=device, **ddp_modules, **{**loss_kwargs, **global_cfg.get('loss_kwargs', {})}) # subclass of training.loss.Loss
+    if 'loss_cfg' in global_cfg:
+        loss = build_model(global_cfg.loss_cfg, cfg_to_kwargs=True, device=device, **ddp_modules, **loss_kwargs)
+    else:
+        loss = dnnlib.util.construct_class_by_name(
+            device=device, **ddp_modules, **{**loss_kwargs, **global_cfg.get('loss_kwargs', {})}) # subclass of training.loss.Loss
     phases = []
     for name, module, opt_kwargs, reg_interval in [('G', G, G_opt_kwargs, G_reg_interval), ('D', D, D_opt_kwargs, D_reg_interval)]:
         if reg_interval is None:
