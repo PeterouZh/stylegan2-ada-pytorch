@@ -30,6 +30,8 @@ def setup_snapshot_image_grid(training_set, random_seed=0):
     rnd = np.random.RandomState(random_seed)
     gw = np.clip(7680 // training_set.image_shape[2], 7, 32)
     gh = np.clip(4320 // training_set.image_shape[1], 4, 32)
+    if training_set.image_shape[2] == 2048:
+        gw = gh = 2
 
     # No labels => show random subset of training samples.
     if not training_set.has_labels:
@@ -153,7 +155,11 @@ def training_loop(
         G = build_model(cfg=global_cfg.G_cfg, cfg_to_kwargs=True).train().requires_grad_(False).to(device)
     else:
         G = dnnlib.util.construct_class_by_name(**G_kwargs, **common_kwargs).train().requires_grad_(False).to(device) # subclass of torch.nn.Module
-    D = dnnlib.util.construct_class_by_name(**D_kwargs, **common_kwargs).train().requires_grad_(False).to(device) # subclass of torch.nn.Module
+    if 'D_cfg' in global_cfg:
+        D = build_model(cfg=global_cfg.D_cfg, cfg_to_kwargs=True, kwargs_priority=True,
+                        **common_kwargs).train().requires_grad_(False).to(device)
+    else:
+        D = dnnlib.util.construct_class_by_name(**D_kwargs, **common_kwargs).train().requires_grad_(False).to(device) # subclass of torch.nn.Module
     G_ema = copy.deepcopy(G).eval()
 
     # Resume from existing pickle.
